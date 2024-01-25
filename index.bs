@@ -1,12 +1,12 @@
 <pre class='metadata'>
-Title: The TODO API
-Shortname: todo
+Title: HTML Fullscreen Without A Gesture
+Shortname: automatic-fullscreen
 Level: None
 Status: w3c/UD
-Repository: explainers-by-googlers/todo-your-repo-name
-URL: https://explainers-by-googlers.github.io/todo-your-repo-name
-Editor: TODO: Your Name, Google https://google.com, TODO@google.com
-Abstract: TODO: A short description of your spec, one or two sentences.
+Repository: explainers-by-googlers/html-fullscreen-without-a-gesture
+URL: https://explainers-by-googlers.github.io/html-fullscreen-without-a-gesture
+Editor: Mike Wasserman, Google https://google.com, msw@google.com
+Abstract: Enable User Agent configurations that permit fullscreen requests without transient activation
 Markup Shorthands: markdown yes, css no
 Complain About: accidental-2119 yes, missing-example-ids yes
 Assume Explicit For: yes

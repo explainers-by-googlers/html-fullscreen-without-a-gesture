@@ -1,24 +1,15 @@
-# Explainer for the TODO API
+# Explainer for HTML Fullscreen Without A Gesture
 
-**Instructions for the explainer author: Search for "todo" in this repository and update all the
-instances as appropriate. For the instances in `index.bs`, update the repository name, but you can
-leave the rest until you start the specification. Then delete the TODOs and this block of text.**
-
-This proposal is an early design sketch by [TODO: team] to describe the problem below and solicit
+This proposal is an early design sketch by Chrome Web Platform Capabilities to describe the problem below and solicit
 feedback on the proposed solution. It has not been approved to ship in Chrome.
-
-TODO: Fill in the whole explainer template below using https://tag.w3.org/explainers/ as a
-reference. Look for [brackets].
 
 ## Proponents
 
-- [Proponent team 1]
-- [Proponent team 2]
-- [etc.]
+- Chrome Web Platform Capabilities
 
 ## Participate
-- https://github.com/explainers-by-googlers/[your-repository-name]/issues
-- [Discussion forum]
+- https://github.com/explainers-by-googlers/html-fullscreen-without-a-gesture/issues
+- https://github.com/whatwg/fullscreen/issues [TODO: specific issue number]
 
 ## Table of Contents [if the explainer is longer than one printed page]
 
@@ -50,128 +41,161 @@ reference. Look for [brackets].
 
 ## Introduction
 
-[The "executive summary" or "abstract".
-Explain in a few sentences what the goals of the project are,
-and a brief overview of how the solution works.
-This should be no more than 1-2 paragraphs.]
+Sites entering [HTML Fullscreen](https://fullscreen.spec.whatwg.org/) require [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) from a user gesture. While that is generally a useful safeguard, it also prohibits some advanced windowing capabilities.
+
+This explainer proposes an algorithmic change to [`Element.requestFullscreen()`](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen), enabling User Agent configurations that permit fullscreen requests without transient activation.
 
 ## Goals
 
-[What is the **end-user need** which this project aims to address? Make this section short, and
-elaborate in the Use cases section.]
-
-## Non-goals
-
-[If there are "adjacent" goals which may appear to be in scope but aren't,
-enumerate them here. This section may be fleshed out as your design progresses and you encounter necessary technical and other trade-offs.]
-
-## User research
-
-[If any user research has been conducted to inform your design choices,
-discuss the process and findings. User research should be more common than it is.]
+Unlock a broad set of advanced fullscreen capabilities to enable smooth end-user experiences.
 
 ## Use cases
 
-[Describe in detail what problems end-users are facing, which this project is trying to solve. A
-common mistake in this section is to take a web developer's or server operator's perspective, which
-makes reviewers worry that the proposal will violate [RFC 8890, The Internet is for End
-Users](https://www.rfc-editor.org/rfc/rfc8890).]
+Virtual Desktop Infrastructure (VDI) clients connect users with remote desktop or app content from a local device, providing immersive computing experiences on the web. Those apps present compelling use cases for showing content fullscreen without stringent transient activation requirements, particularly on multi-screen devices.
 
-### Use case 1
+* Show fullscreen remote desktop content on multiple displays with one user gesture
+* Automatically extend a fullscreen desktop session onto a newly connected display
+* Swap fullscreen windows between displays with one user gesture
+* Request fullscreen after transient activation expiry, e.g. slow remote host response
+* Open a popup and make it fullscreen with one user gesture
+* Apply remote app fullscreen state locally, e.g. on app launch or system events
 
-### Use case 2
+This functionality would also prove useful for finance, medical, signage, gaming, creativity, and presentation web app use cases.
 
-<!-- In your initial explainer, you shouldn't be attached or appear attached to any of the potential
-solutions you describe below this. -->
+## Enable User Agent configurations that permit fullscreen requests without transient activation
 
-## [Potential Solution]
+This potential solution extends step #5 of the [`Element.requestFullscreen()`](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen) algorithm to accommodate user agent configurations that permit fullscreen requests without transient activation.
 
-[For each related element of the proposed solution - be it an additional JS method, a new object, a new element, a new concept etc., create a section which briefly describes it.]
+Before (*[sic]* [orientation dfn link broken](https://github.com/whatwg/fullscreen/issues/215)):
+* [This](https://webidl.spec.whatwg.org/#this)’s [relevant global object](https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global) has [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) or the algorithm is [triggered by a user generated orientation change](https://w3c.github.io/screen-orientation/#dfn-triggered-by-a-user-generated-orientation-change).
+
+After:
+* [This](https://webidl.spec.whatwg.org/#this)’s [relevant global object](https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global) has [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation), the algorithm is [triggered by a user generated orientation change](https://w3c.github.io/screen-orientation/#dfn-triggered-by-a-user-generated-orientation-change), or the user agent has been configured to permit fullscreen without [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation).
+
+### Example 
 
 ```js
-// Provide example code - not IDL - demonstrating the design of the feature.
+initiateMultiScreenFullscreenButton.addEventListener('click', async () => {
+  let screenDetails = await window.getScreenDetails();
 
-// If this API can be used on its own to address a user need,
-// link it back to one of the scenarios in the goals section.
+  // Make the current window fullscreen on its current screen.
+  document.documentElement.requestFullscreen({screen : screenDetails.currentScreen});
 
-// If you need to show how to get the feature set up
-// (initialized, or using permissions, etc.), include that too.
+  // Open a fullscreen popup on each other screen.
+  for (let s of screenDetails.screens.filter(s => s !== screenDetails.currentScreen)) {
+    let popup = window.open(getUrlForScreen(s), '_blank', `popup,left=${s.availLeft},top=${s.availTop},width=${s.availWidth},height=${s.availHeight}`);
+    popup.addEventListener('load', () => { popup.document.documentElement.requestFullscreen({screen : s}); });
+  }
+});
 ```
-
-[Where necessary, provide links to longer explanations of the relevant pre-existing concepts and API.
-If there is no suitable external documentation, you might like to provide supplementary information as an appendix in this document, and provide an internal link where appropriate.]
-
-[If this is already specced, link to the relevant section of the spec.]
-
-[If spec work is in progress, link to the PR or draft of the spec.]
-
-[If you have more potential solutions in mind, add ## Potential Solution 2, 3, etc. sections.]
 
 ### How this solution would solve the use cases
 
-[If there are a suite of interacting APIs, show how they work together to solve the use cases described.]
+This uses existing [Window Management API](https://w3c.github.io/window-management/) surfaces to [request detailed screen information](https://w3c.github.io/window-management/#usage-overview-screen-details) then place [windows](https://w3c.github.io/window-management/#usage-overview-place-windows-on-a-specific-screen) and [fullscreen content](https://w3c.github.io/window-management/#usage-overview-place-fullscreen-content-on-a-specific-screen) on specific screens. Users must grant Window Management permission, and configure their user agent to unblock popups and (NEW) permit fullscreen without transient activation in the relevant context.
 
-#### Use case 1
-
-[Description of the end-user scenario]
-
-```js
-// Sample code demonstrating how to use these APIs to address that scenario.
-```
-
-#### Use case 2
-
-[etc.]
+Otherwise, corresponding functionality requires cumbersome user interactions to open and fullscreen each window:
+* The user must click once to open each popup, or interact with blocked popup UIs, if popups are blocked.
+* The user must manually place each popup on its intended screen, if Window Management permission is not granted.
+* The user must click each popup to enter fullscreen, if fullscreen without transient activation is blocked.
 
 ## Detailed design discussion
 
-### [Tricky design choice #1]
+The [Window Management API](https://w3c.github.io/window-management/) provides relevant multi-screen content placement features ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window_Management_API)).
 
-[Talk through the tradeoffs in coming to the specific design point you want to make.]
+User Agents widely support configurations that block or allow the creation of popup windows without transient activation.
 
-```js
-// Illustrated with example code.
+That is reflected in [The rules for choosing a navigable](https://html.spec.whatwg.org/multipage/document-sequences.html#the-rules-for-choosing-a-navigable) when a new [top-level traversable](https://html.spec.whatwg.org/multipage/document-sequences.html#top-level-traversable) is being requested, as invoked by [`Window.open()`](https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-open-dev):
+
+* If currentNavigable's [active window](https://html.spec.whatwg.org/multipage/document-sequences.html#nav-window) does not have [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) and the user agent has been configured to not show popups (i.e., the user agent has a "popup blocker" enabled)
+  * The user agent may inform the user that a popup has been blocked.
+
+This proposal aims to offer similar flexibility for fullscreen window management, so VDI clients and other advanced web apps can offer high quality fullscreen experiences that match user expecations.
+
+### Permission API integration
+
+This proposal avoids [Permission API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) integration for now, since most sites will not need this capability, which raises nuanced security considerations.
+
+It is possible to add Permission API integration in the future, by defining a new [powerful feature](https://w3c.github.io/permissions/#dfn-powerful-feature), e.g. `automatic-fullscreen`.
+
+### UI changes
+
+User agents share some common patterns around UI treatments for setting configurations, [Fullscreen UI](https://fullscreen.spec.whatwg.org/#ui), and blocked popup notifications. This proposal doesn’t make specific UI recommendations.
+
+### Feature detection
+
+Feature detection could be useful. Here is a proposed Web IDL shape that parallels the existing [Document.fullscreenEnabled](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
+
+```JS
+partial interface Document {
+  readonly attribute boolean fullscreenRequiresTransientActivation;
+}
 ```
 
-[This may be an open question,
-in which case you should link to any active discussion threads.]
+Alternately, sites could call requestFullscreen on a detached DOM element without a gesture, and assess the TypeError message, if user agents surface transient activation errors over detached node errors (not currently true in Chrome), and sites would need fragile per-browser logic:
 
-### [Tricky design choice 2]
+```JS
+if (!navigator.userActivation.isActive) {
+  document.createElement('div').requestFullscreen().catch(e => {
+    if (e instanceof TypeError) {
+      if (e.message === "Permissions check failed")
+        console.log("Fullscreen requires a gesture");
+      else if (e.message === "Element is not connected")
+        console.log("Fullscreen does not require a gesture");
+  });
+}
+```
 
-[etc.]
+Permission API integration is another viable alternative, if deemed appropriate:
+```JS
+navigator.permissions.query({name: 'automatic-fullscreen'});
+
+// OR:
+navigator.permissions.query({
+  name: 'fullscreen',
+  withoutUserGesture: true,
+});
+```
+
+## Security Considerations
+
+Fullscreen web content poses spoofing risks and other usable security concerns. Sites entering fullscreen without transient activation will exacerbate those concerns.
+
+User agents should offer controls with adequate disclaimers, allowing savvy users or administrators to grant this powerful web capability in trusted contexts, but most users and sites would not need this functionality. Foregoing Permission API integration prevents sites from prompting users in drive-by web experiences. User agents could reasonably restrict this configuration to security-sensitive apps, like Chrome’s [Isolated Web Apps](https://chromestatus.com/feature/5146307550248960).
+
+User Agents could improve their own fullscreen user interfaces to better convey window states and state transitions, especially in sensitive situations. User agents could present blocking or persistent user interface surfaces with prominent security context when sites enter fullscreen without transient activation.
+
+## Privacy Considerations
+
+This feature does not directly expose any information to sites, and there are no significant privacy considerations to note.
 
 ## Considered alternatives
 
-[This should include as many alternatives as you can,
-from high level architectural decisions down to alternative naming choices.]
+### Multiple fullscreens from one gesture
 
-### [Alternative 1]
+Another [explainer](https://github.com/w3c/window-management/blob/main/EXPLAINER_initiating_multi_screen_experiences.md) considered initiating multi-screen experience from a single user gesture. That was far more complex and restrictive, but most importantly, VDI web development partners ultimately require some functionality without any user gesture.
 
-[Describe an alternative which was considered,
-and why you decided against it.]
+### Fullscreen popups 
 
-### [Alternative 2]
-
-[etc.]
+Another [explainer](https://github.com/w3c/window-management/blob/main/EXPLAINER_fullscreen_popups.md) and ongoing [chrome experiment](https://chromestatus.com/feature/6002307972464640) ([blog post](https://developer.chrome.com/blog/fullscreen-popups-origin-trial/)) considered creating fullscreen popup windows, but that did not meet VDI web development partner requirements, particularly for making pre-existing windows fullscreen, and waiving user gesture requirements.
 
 ## Stakeholder Feedback / Opposition
 
-[Implementors and other stakeholders may already have publicly stated positions on this work. If you can, list them here with links to evidence as appropriate.]
+Web Developers have requested relevant functionality in the [Window Management API Issue tracker](https://github.com/w3c/window-management/issues):
+ - [window.open should support the 'fullscreen' option #7](https://github.com/w3c/window-management/issues/7)
+ - [Feature Request: Initiate a multi-screen experience from a single user activation #98](https://github.com/w3c/window-management/issues/98)
+ - [Feature request: Fullscreen support on multiple screens #92](https://github.com/w3c/window-management/issues/92)
 
-- [Implementor A] : Positive
-- [Stakeholder B] : No signals
-- [Implementor C] : Negative
+Publicly stated positions from implementors have been requested:
+- [TODO: link requests]
 
-[If appropriate, explain the reasons given by other implementors for their concerns.]
+Additional discussion can be found on the [Fullscreen API Issue tracker](https://github.com/whatwg/fullscreen/issues):
+- [TODO: Link specific issue]
+- This compliments [Proposal: Supporting fullscreen requests in multi-screen environments. #161](https://github.com/whatwg/fullscreen/issues/161)
 
 ## References & acknowledgements
 
-[Your design will change and be informed by many people; acknowledge them in an ongoing way! It helps build community and, as we only get by through the contributions of many, is only fair.]
+Many thanks for valuable feedback and advice from many folks, especially:
 
-[Unless you have a specific reason not to, these should be in alphabetical order.]
-
-Many thanks for valuable feedback and advice from:
-
-- [Person 1]
-- [Person 2]
-- [etc.]
+- ayuishii
+- bradtriebwasser
+- takumif
