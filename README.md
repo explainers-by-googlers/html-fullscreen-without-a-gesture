@@ -1,11 +1,11 @@
 # Explainer for HTML Fullscreen Without A Gesture
 
-This proposal is an early design sketch by Chrome Web Platform Capabilities to describe the problem below and solicit
+This proposal is an early design sketch by Chrome's Web Apps & Capabilities (Fugu) team to describe the problem below and solicit
 feedback on the proposed solution. It has not been approved to ship in Chrome.
 
 ## Proponents
 
-- Chrome Web Platform Capabilities
+- Chrome's Web Apps & Capabilities (Fugu) team
 
 ## Participate
 - https://github.com/explainers-by-googlers/html-fullscreen-without-a-gesture/issues
