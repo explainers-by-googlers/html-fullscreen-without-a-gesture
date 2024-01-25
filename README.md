@@ -11,7 +11,7 @@ feedback on the proposed solution. It has not been approved to ship in Chrome.
 - https://github.com/explainers-by-googlers/html-fullscreen-without-a-gesture/issues
 - https://github.com/whatwg/fullscreen/issues [TODO: specific issue number]
 
-## Table of Contents [if the explainer is longer than one printed page]
+## Table of Contents
 
 <!-- Update this table of contents by running `npx doctoc README.md` -->
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -19,21 +19,19 @@ feedback on the proposed solution. It has not been approved to ship in Chrome.
 
 - [Introduction](#introduction)
 - [Goals](#goals)
-- [Non-goals](#non-goals)
-- [User research](#user-research)
 - [Use cases](#use-cases)
-  - [Use case 1](#use-case-1)
-  - [Use case 2](#use-case-2)
-- [[Potential Solution]](#potential-solution)
+- [Enable User Agent configurations that permit fullscreen requests without transient activation](#enable-user-agent-configurations-that-permit-fullscreen-requests-without-transient-activation)
+  - [Example](#example)
   - [How this solution would solve the use cases](#how-this-solution-would-solve-the-use-cases)
-    - [Use case 1](#use-case-1-1)
-    - [Use case 2](#use-case-2-1)
 - [Detailed design discussion](#detailed-design-discussion)
-  - [[Tricky design choice #1]](#tricky-design-choice-1)
-  - [[Tricky design choice 2]](#tricky-design-choice-2)
+  - [Permission API integration](#permission-api-integration)
+  - [UI changes](#ui-changes)
+  - [Feature detection](#feature-detection)
+- [Security Considerations](#security-considerations)
+- [Privacy Considerations](#privacy-considerations)
 - [Considered alternatives](#considered-alternatives)
-  - [[Alternative 1]](#alternative-1)
-  - [[Alternative 2]](#alternative-2)
+  - [Multiple fullscreens from one gesture](#multiple-fullscreens-from-one-gesture)
+  - [Fullscreen popups](#fullscreen-popups)
 - [Stakeholder Feedback / Opposition](#stakeholder-feedback--opposition)
 - [References & acknowledgements](#references--acknowledgements)
 
