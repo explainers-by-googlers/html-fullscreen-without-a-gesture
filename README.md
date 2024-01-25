@@ -100,9 +100,7 @@ Otherwise, corresponding functionality requires cumbersome user interactions to 
 
 The [Window Management API](https://w3c.github.io/window-management/) provides relevant multi-screen content placement features ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window_Management_API)).
 
-User Agents widely support configurations that block or allow the creation of popup windows without transient activation.
-
-That is reflected in [The rules for choosing a navigable](https://html.spec.whatwg.org/multipage/document-sequences.html#the-rules-for-choosing-a-navigable) when a new [top-level traversable](https://html.spec.whatwg.org/multipage/document-sequences.html#top-level-traversable) is being requested, as invoked by [`Window.open()`](https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-open-dev):
+User Agents widely support configurations that block or allow the creation of popup windows without transient activation. That is reflected in [The rules for choosing a navigable](https://html.spec.whatwg.org/multipage/document-sequences.html#the-rules-for-choosing-a-navigable) when a new [top-level traversable](https://html.spec.whatwg.org/multipage/document-sequences.html#top-level-traversable) is being requested, as invoked by [`Window.open()`](https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-open-dev):
 
 * If currentNavigable's [active window](https://html.spec.whatwg.org/multipage/document-sequences.html#nav-window) does not have [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) and the user agent has been configured to not show popups (i.e., the user agent has a "popup blocker" enabled)
   * The user agent may inform the user that a popup has been blocked.
@@ -121,7 +119,7 @@ User agents share some common patterns around UI treatments for setting configur
 
 ### Feature detection
 
-Feature detection could be useful. Here is a proposed Web IDL shape that parallels the existing [Document.fullscreenEnabled](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
+Feature detection could be useful. Here is a proposed Web IDL shape that parallels the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
 
 ```JS
 partial interface Document {
@@ -129,7 +127,7 @@ partial interface Document {
 }
 ```
 
-Alternately, sites could call requestFullscreen on a detached DOM element without a gesture, and assess the TypeError message, if user agents surface transient activation errors over detached node errors (not currently true in Chrome), and sites would need fragile per-browser logic:
+Alternately, sites could call requestFullscreen on a detached DOM element without a gesture, and assess the `TypeError` message, if user agents surface transient activation errors over detached node errors (not currently true in Chrome), but sites would need fragile implementation-specific logic:
 
 ```JS
 if (!navigator.userActivation.isActive) {
@@ -148,10 +146,7 @@ Permission API integration is another viable alternative, if deemed appropriate:
 navigator.permissions.query({name: 'automatic-fullscreen'});
 
 // OR:
-navigator.permissions.query({
-  name: 'fullscreen',
-  withoutUserGesture: true,
-});
+navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});
 ```
 
 ## Security Considerations
