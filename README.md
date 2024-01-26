@@ -9,7 +9,7 @@ feedback on the proposed solution. It has not been approved to ship in Chrome.
 
 ## Participate
 - https://github.com/explainers-by-googlers/html-fullscreen-without-a-gesture/issues
-- https://github.com/whatwg/fullscreen/issues [TODO: specific issue number]
+- https://github.com/whatwg/fullscreen/issues/234
 
 ## Table of Contents
 
@@ -62,7 +62,7 @@ This functionality would also prove useful for finance, medical, signage, gaming
 
 ## Enable User Agent configurations that permit fullscreen requests without transient activation
 
-This potential solution extends step #5 of the [`Element.requestFullscreen()`](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen) algorithm to accommodate user agent configurations that permit fullscreen requests without transient activation.
+This potential solution extends step #5 of the [`Element.requestFullscreen()`](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen) algorithm to accommodate user agent configurations that permit fullscreen requests without transient activation. See an illustrative PR: [WIP: Enable configuration for fullscreen without transient activation #235](https://github.com/whatwg/fullscreen/pull/235)
 
 Before (*[sic]* [orientation dfn link broken](https://github.com/whatwg/fullscreen/issues/215)):
 * [This](https://webidl.spec.whatwg.org/#this)’s [relevant global object](https://html.spec.whatwg.org/multipage/webappapis.html#concept-relevant-global) has [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) or the algorithm is [triggered by a user generated orientation change](https://w3c.github.io/screen-orientation/#dfn-triggered-by-a-user-generated-orientation-change).
@@ -181,8 +181,9 @@ Web Developers have requested relevant functionality in the [Window Management A
 Publicly stated positions from implementors have been requested:
 - [TODO: link requests]
 
-Additional discussion can be found on the [Fullscreen API Issue tracker](https://github.com/whatwg/fullscreen/issues):
-- [TODO: Link specific issue]
+Additional discussion can be found on [Fullscreen API Issues](https://github.com/whatwg/fullscreen/issues):
+- [Entering fullscreen without transient activation #234](https://github.com/whatwg/fullscreen/issues/234)
+  - PR [WIP: Enable configuration for fullscreen without transient activation #235](https://github.com/whatwg/fullscreen/pull/235)
 - This compliments [Proposal: Supporting fullscreen requests in multi-screen environments. #161](https://github.com/whatwg/fullscreen/issues/161)
 
 ## References & acknowledgements
