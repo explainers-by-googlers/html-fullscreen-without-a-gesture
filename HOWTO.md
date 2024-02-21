@@ -1,6 +1,6 @@
 # How to experiment with HTML Fullscreen Without A Gesture in Chrome
 
-A prototype of the proposal may be available in Chrome M123.
+A prototype of the proposal is available in Chrome M124.
 
 **This is intended for experimentation purposes and is subject to change.**
 
