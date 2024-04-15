@@ -153,7 +153,7 @@ navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});
 
 Fullscreen web content poses spoofing risks and other usable security concerns. Sites entering fullscreen without transient activation will exacerbate those concerns.
 
-User agents should offer controls with adequate disclaimers, allowing savvy users or administrators to grant this powerful web capability in trusted contexts, but most users and sites would not need this functionality. Foregoing Permission API integration prevents sites from prompting users in drive-by web experiences. User agents could reasonably restrict this configuration to security-sensitive apps, like Chrome’s [Isolated Web Apps](https://chromestatus.com/feature/5146307550248960).
+User agents may provide controls (e.g. application settings) rather than permission prompts. That allows savvy users or enterprise administrators to grant this infrequently needed powerful web capability with adequate disclaimers in trusted contexts, while preventing sites from prompting users in drive-by web experiences. User agents could reasonably restrict this configuration to security-sensitive apps, like Chrome’s [Isolated Web Apps](https://chromestatus.com/feature/5146307550248960).
 
 User Agents could improve their own fullscreen user interfaces to better convey window states and state transitions, especially in sensitive situations. User agents could present blocking or persistent user interface surfaces with prominent security context when sites enter fullscreen without transient activation.
 
