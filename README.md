@@ -119,7 +119,16 @@ User agents share some common patterns around UI treatments for setting configur
 
 ### Feature detection
 
-Feature detection could be useful. Here is a proposed Web IDL shape that parallels the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
+Feature detection could be useful, even if sites remian unable to prompt users for this feature.
+
+One possible approach would be adding a [Permissions API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) descriptor to [query](https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query):
+```JS
+navigator.permissions.query({name: 'automatic-fullscreen'});
+// OR:
+navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});
+```
+
+Alternately, a new `Document.fullscreenRequiresTransientActivation` boolean could parallel the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
 
 ```JS
 partial interface Document {
@@ -127,7 +136,7 @@ partial interface Document {
 }
 ```
 
-Alternately, sites could call requestFullscreen on a detached DOM element without a gesture, and assess the `TypeError` message, if user agents surface transient activation errors over detached node errors (not currently true in Chrome), but sites would need fragile implementation-specific logic:
+A hacky alternative could require sites to call requestFullscreen on a [detached DOM element](https://github.com/explainers-by-googlers/locked-mode/issues/6) without a gesture. Sites would then assess the error type or message. This would require changing a lack of transient activation to take precedence over the detached node error, potentially changing Error types thrown, and sites would need fragile per-browser logic:
 
 ```JS
 if (!navigator.userActivation.isActive) {
@@ -139,14 +148,6 @@ if (!navigator.userActivation.isActive) {
         console.log("Fullscreen does not require a gesture");
   });
 }
-```
-
-Permission API integration is another viable alternative, if deemed appropriate:
-```JS
-navigator.permissions.query({name: 'automatic-fullscreen'});
-
-// OR:
-navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});
 ```
 
 ## Security Considerations
