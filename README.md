@@ -62,6 +62,8 @@ This functionality would also prove useful for finance, medical, signage, gaming
 
 ## Enable User Agent configurations that permit fullscreen requests without transient activation
 
+### Spec changes
+
 This potential solution extends step #5 of the [`Element.requestFullscreen()`](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen) algorithm to accommodate user agent configurations that permit fullscreen requests without transient activation. See an illustrative PR: [WIP: Enable configuration for fullscreen without transient activation #235](https://github.com/whatwg/fullscreen/pull/235)
 
 Before (*[sic]* [orientation dfn link broken](https://github.com/whatwg/fullscreen/issues/215)):
