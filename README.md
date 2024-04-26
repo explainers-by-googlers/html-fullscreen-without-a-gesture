@@ -21,6 +21,7 @@ feedback on the proposed solution. It has not been approved to ship in Chrome.
 - [Goals](#goals)
 - [Use cases](#use-cases)
 - [Enable User Agent configurations that permit fullscreen requests without transient activation](#enable-user-agent-configurations-that-permit-fullscreen-requests-without-transient-activation)
+  - [Spec changes](#spec-changes)
   - [Example](#example)
   - [How this solution would solve the use cases](#how-this-solution-would-solve-the-use-cases)
 - [Detailed design discussion](#detailed-design-discussion)
