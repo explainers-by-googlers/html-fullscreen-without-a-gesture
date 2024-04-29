@@ -20,7 +20,7 @@ N/A; the feature does not deal with sensitive information.
 
 **2.5 Do the features in your specification introduce new state for an origin that persists across browsing sessions?**
 
-Yes; User Agents can persist their configuration across browsing sessions.
+Yes; User Agent configurations can persist across browsing sessions, but are not under the site's control.
 
 **2.6 Do the features in your specification expose information about the underlying platform to origins?**
 
@@ -52,11 +52,13 @@ None.
 
 **2.13 How does this specification distinguish between behavior in first-party and third-party contexts?**
 
-The preexisting `fullscreen` Permissions-Policy governs access to the Fullscreen API by third-party contexts. As such, User Agent configurations regarding gesture requirements for first-party contexts can apply to third-party contexts. (i.e. third-party iframes may only enter fullscreen without a gesture if (a) the User Agent is configured to permit fullscreen without a gesture in the first-party context and (b) the third-party context is granted the `fullscreen` Permissions-Policy).
+We've explicitly chosen not to introduce another policy-controlled feature name for automatic fullscreen. If the parent document delegates `fullscreen` to the child document, it accepts that its ability to automatically enter fullscreen is delegated as well.
+
+So, third-party iframes may only enter fullscreen without a gesture if (a) the User Agent is configured to permit fullscreen without a gesture in the first-party context and (b) the third-party context is granted the preexisting `fullscreen` Permissions-Policy.
 
 **2.14 How do the features in this specification work in the context of a browser’s Private Browsing or Incognito mode?**
 
-User Agents can respect this configuration in Private Browsing or Incognito mode, as they would outside those contexts.
+User Agents can choose whether or not to respect their configuration in Private Browsing or Incognito mode. Chromium has chosen to respect its settings in all modes.
 
 **2.15 Does this specification have both "Security Considerations" and "Privacy Considerations" sections?**
 
@@ -68,7 +70,7 @@ The Fullscreen API hides protective User Agent user interface elements, and the 
 
 **2.17 How does your feature handle non-"fully active" documents?**
 
-Handling is specified by the Fullscreen API itself. `requestFullscreen()` requests from non-"fully active" documents are rejected, and user agents fully exit fullscreen during unloading document cleanup steps.
+Handling is specified by the Fullscreen API itself; requests from non-"fully active" documents are rejected, and User Agents exit fullscreen during unloading document cleanup steps.
 
 **2.18 What should this questionnaire have asked?**
 
