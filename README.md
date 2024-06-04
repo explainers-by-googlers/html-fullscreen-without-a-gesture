@@ -10,6 +10,7 @@ feedback on the proposed solution. It has not been approved to ship in Chrome.
 ## Participate
 - https://github.com/explainers-by-googlers/html-fullscreen-without-a-gesture/issues
 - https://github.com/whatwg/fullscreen/issues/234
+- https://github.com/whatwg/fullscreen/pull/235
 
 ## Table of Contents
 
@@ -103,6 +104,8 @@ Otherwise, corresponding functionality requires cumbersome user interactions to 
 
 The [Window Management API](https://w3c.github.io/window-management/) provides relevant multi-screen content placement features ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window_Management_API)).
 
+### Popup blocking precedent
+
 User Agents widely support configurations that block or allow the creation of popup windows without transient activation. That is reflected in [The rules for choosing a navigable](https://html.spec.whatwg.org/multipage/document-sequences.html#the-rules-for-choosing-a-navigable) when a new [top-level traversable](https://html.spec.whatwg.org/multipage/document-sequences.html#top-level-traversable) is being requested, as invoked by [`Window.open()`](https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-open-dev):
 
 * If currentNavigable's [active window](https://html.spec.whatwg.org/multipage/document-sequences.html#nav-window) does not have [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) and the user agent has been configured to not show popups (i.e., the user agent has a "popup blocker" enabled)
@@ -110,48 +113,31 @@ User Agents widely support configurations that block or allow the creation of po
 
 This proposal aims to offer similar flexibility for fullscreen window management, so VDI clients and other advanced web apps can offer high quality fullscreen experiences that match user expecations.
 
-### Permission API integration
+### Permissions API integration
 
-This proposal avoids [Permission API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) integration for now, since most sites will not need this capability, which raises nuanced security considerations.
+This proposal suggests adding a new [powerful feature](https://w3c.github.io/permissions/#dfn-powerful-feature) named `automatic-fullscreen`, to the [permissions-registry](https://w3c.github.io/permissions-registry). This enables sites to [query](https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query) the user agent's configuration state in the relevant context using the [Permissions API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API):
 
-It is possible to add Permission API integration in the future, by defining a new [powerful feature](https://w3c.github.io/permissions/#dfn-powerful-feature), e.g. `automatic-fullscreen`.
+```JS
+navigator.permissions.query({name: 'automatic-fullscreen'});
+```
+
+When the permission is `granted`, sites can generally enter [HTML Fullscreen](https://fullscreen.spec.whatwg.org/) without [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) from a user gesture.
+
+### Permissions Policy integration
+
+This proposal suggests reusing the existing [policy-controlled feature](https://github.com/w3c/webappsec-permissions-policy/blob/main/features.md) named `fullscreen`, defined in the [Fullscreen API Standard](https://fullscreen.spec.whatwg.org/#permissions-policy-integration), to convey configuration state to specific frames.
+
+For example, allowing the `fullscreen` policy-controlled feature on an embedded iframe also conveys any `automatic-fullscreen` permission grant to the embedded context (i.e. `<iframe allow="fullscreen *">`). Similarly, denying the `fullscreen` policy-controlled feature denies any `automatic-fullscreen` permission grant.
+
+So if an embedded iframe is allowed the `fullscreen` policy-controlled feature, and the top-level frame has been granted the `automatic-fullscreen` permission, then the embedded frame can also generally enter [HTML Fullscreen](https://fullscreen.spec.whatwg.org/) without [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation).
+
+### Feature detection
+
+Feature detection is valuable for sites that wish to use this feature. The proposed Permissions API integration enables sites to determine whether the user agent has been configured to allow [HTML Fullscreen](https://fullscreen.spec.whatwg.org/) without [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) in the given context. Sites can also determine whether the user agent potentially supports such configuration in the given context, by checking if their Permissions API query yields a result or an exception.
 
 ### UI changes
 
 User agents share some common patterns around UI treatments for setting configurations, [Fullscreen UI](https://fullscreen.spec.whatwg.org/#ui), and blocked popup notifications. This proposal doesn’t make specific UI recommendations.
-
-### Feature detection
-
-Feature detection could be useful, even if sites remian unable to prompt users for this feature.
-
-One possible approach would be adding a [Permissions API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) descriptor to [query](https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query):
-```JS
-navigator.permissions.query({name: 'automatic-fullscreen'});
-// OR:
-navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});
-```
-
-Alternately, a new `Document.fullscreenRequiresTransientActivation` boolean could parallel the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled).
-
-```JS
-partial interface Document {
-  readonly attribute boolean fullscreenRequiresTransientActivation;
-}
-```
-
-A hacky alternative could require sites to call requestFullscreen on a [detached DOM element](https://github.com/explainers-by-googlers/locked-mode/issues/6) without a gesture. Sites would then assess the error type or message. This would require changing a lack of transient activation to take precedence over the detached node error, potentially changing Error types thrown, and sites would need fragile per-browser logic:
-
-```JS
-if (!navigator.userActivation.isActive) {
-  document.createElement('div').requestFullscreen().catch(e => {
-    if (e instanceof TypeError) {
-      if (e.message === "Permissions check failed")
-        console.log("Fullscreen requires a gesture");
-      else if (e.message === "Element is not connected")
-        console.log("Fullscreen does not require a gesture");
-  });
-}
-```
 
 ## Security Considerations
 
@@ -160,6 +146,8 @@ Fullscreen web content poses spoofing risks and other usable security concerns. 
 User agents may provide controls (e.g. application settings) rather than permission prompts. That allows savvy users or enterprise administrators to grant this infrequently needed powerful web capability with adequate disclaimers in trusted contexts, while preventing sites from prompting users in drive-by web experiences. User agents could reasonably restrict this configuration to security-sensitive apps, like Chrome’s [Isolated Web Apps](https://chromestatus.com/feature/5146307550248960).
 
 User Agents could improve their own fullscreen user interfaces to better convey window states and state transitions, especially in sensitive situations. User agents could present blocking or persistent user interface surfaces with prominent security context when sites enter fullscreen without transient activation.
+
+User Agents can also implement mitigations against suspected abuse of this new feature, like requiring transient activation to re-enter fullscreen for a short time after the user exits fullscreen.
 
 ## Privacy Considerations
 
@@ -175,6 +163,28 @@ Another [explainer](https://github.com/w3c/window-management/blob/main/EXPLAINER
 
 Another [explainer](https://github.com/w3c/window-management/blob/main/EXPLAINER_fullscreen_popups.md) and ongoing [chrome experiment](https://chromestatus.com/feature/6002307972464640) ([blog post](https://developer.chrome.com/blog/fullscreen-popups-origin-trial/)) considered creating fullscreen popup windows, but that did not meet VDI web development partner requirements, particularly for making pre-existing windows fullscreen, and waiving user gesture requirements.
 
+### Permissions alternatives
+
+An alternative Permissions API query pattern might be useful if there were a broader `fullscreen` powerful feature: `navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});`.
+
+A `Document.fullscreenRequiresTransientActivation` boolean could parallel the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled), but seems inherently inferior to Permissions API integration.
+
+A new permissions policy-controlled feature would only be useful if sites needed to convey `fullscreen`, but *not* the `automatic-fullscreen` permission.
+
+A hacky alternative could require sites to call requestFullscreen on a [detached DOM element](https://github.com/explainers-by-googlers/locked-mode/issues/6) without a gesture, then assess the error type or message. This would require changing a lack of transient activation to take precedence over the detached node error, potentially changing Error types thrown, and sites would need fragile per-browser logic:
+
+```JS
+if (!navigator.userActivation.isActive) {
+  document.createElement('div').requestFullscreen().catch(e => {
+    if (e instanceof TypeError) {
+      if (e.message === "Permissions check failed")
+        console.log("Fullscreen requires a gesture");
+      else if (e.message === "Element is not connected")
+        console.log("Fullscreen does not require a gesture");
+  });
+}
+```
+
 ## Stakeholder Feedback / Opposition
 
 Web Developers have requested relevant functionality in the [Window Management API Issue tracker](https://github.com/w3c/window-management/issues):
@@ -183,7 +193,8 @@ Web Developers have requested relevant functionality in the [Window Management A
  - [Feature request: Fullscreen support on multiple screens #92](https://github.com/w3c/window-management/issues/92)
 
 Publicly stated positions from implementors have been requested:
-- [TODO: link requests]
+- https://github.com/mozilla/standards-positions/issues/1020
+- https://github.com/WebKit/standards-positions/issues/345
 
 Additional discussion can be found on [Fullscreen API Issues](https://github.com/whatwg/fullscreen/issues):
 - [Entering fullscreen without transient activation #234](https://github.com/whatwg/fullscreen/issues/234)
