@@ -78,6 +78,25 @@ After:
 
 ```js
 initiateMultiScreenFullscreenButton.addEventListener('click', async () => {
+  try {
+    const permissionStatus = await navigator.permissions.query({name: 'fullscreen', allowWithoutGesture: true});
+    if (permissionStatus.state != 'granted') {
+      // Permission is not granted; each window will need a separate gesture to enter fullscreen.
+    }
+  } catch (error) {
+    // Permission is not supported; each window will need a separate gesture to enter fullscreen.
+  }
+
+  try {
+    const permissionStatus = await navigator.permissions.query({name: 'window-management'});
+    if (permissionStatus.state != 'granted') {
+      // Permission is not yet granted; the user will be prompted, or each window will need to be placed on other screens manually.
+    }
+  } catch (error) {
+    // Permission is not supported; each window will need to be placed on other screens manually.
+  }
+
+
   let screenDetails = await window.getScreenDetails();
 
   // Make the current window fullscreen on its current screen.
@@ -86,7 +105,11 @@ initiateMultiScreenFullscreenButton.addEventListener('click', async () => {
   // Open a fullscreen popup on each other screen.
   for (let s of screenDetails.screens.filter(s => s !== screenDetails.currentScreen)) {
     let popup = window.open(getUrlForScreen(s), '_blank', `popup,left=${s.availLeft},top=${s.availTop},width=${s.availWidth},height=${s.availHeight}`);
-    popup.addEventListener('load', () => { popup.document.documentElement.requestFullscreen({screen : s}); });
+    if (!popup) {
+      // Popups are being blocked; this window will need a separate gesture to open each popup window.
+    } else {
+      popup.addEventListener('load', () => { popup.document.documentElement.requestFullscreen({screen : s}); });
+    }
   }
 });
 ```
@@ -115,13 +138,15 @@ This proposal aims to offer similar flexibility for fullscreen window management
 
 ### Permissions API integration
 
-This proposal suggests adding a new [powerful feature](https://w3c.github.io/permissions/#dfn-powerful-feature) named `automatic-fullscreen`, to the [permissions-registry](https://w3c.github.io/permissions-registry). This enables sites to [query](https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query) the user agent's configuration state in the relevant context using the [Permissions API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API):
+This proposal suggests adding a new [powerful feature](https://w3c.github.io/permissions/#dfn-powerful-feature) named `fullscreen`, to the [permissions-registry](https://w3c.github.io/permissions-registry). The [Permissions API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) [https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query#permissiondescriptor](permissionDescriptor) would include an option `allowWithoutGesture`, to signify whether the query pertains to fullscreen requests made with or without the transient activation conveyed by a user gesture. This enables sites to [query](https://developer.mozilla.org/en-US/docs/Web/API/Permissions/query) the user agent's configuration state in the relevant context:
 
 ```JS
-navigator.permissions.query({name: 'automatic-fullscreen'});
+navigator.permissions.query({name: 'fullscreen', allowWithoutGesture: true});
 ```
 
 When the permission is `granted`, sites can generally enter [HTML Fullscreen](https://fullscreen.spec.whatwg.org/) without [transient activation](https://html.spec.whatwg.org/multipage/interaction.html#transient-activation) from a user gesture.
+
+This proposal suggests the `{name: 'fullscreen', <options>}` descriptor shape in order to support future prospective queries pertaining to the Fullscreen API. The Permissions API may yield a `TypeError` exception for queries when `allowWithoutGesture` is false or unspecified, as it does for unknown descriptor names, representing that no corresponding permission state exists.
 
 ### Permissions Policy integration
 
@@ -165,7 +190,7 @@ Another [explainer](https://github.com/w3c/window-management/blob/main/EXPLAINER
 
 ### Permissions alternatives
 
-An alternative Permissions API query pattern might be useful if there were a broader `fullscreen` powerful feature: `navigator.permissions.query({name: 'fullscreen', withoutUserGesture: true});`.
+An alternative Permissions API query descriptor shape might be useful if using `fullscreen` were not a suitable powerful feature name: `navigator.permissions.query({name: 'automatic-fullscreen'});`.
 
 A `Document.fullscreenRequiresTransientActivation` boolean could parallel the existing [`Document.fullscreenEnabled`](https://fullscreen.spec.whatwg.org/#ref-for-dom-document-fullscreenenabled), but seems inherently inferior to Permissions API integration.
 
