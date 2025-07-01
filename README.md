@@ -1,7 +1,12 @@
 # Explainer for HTML Fullscreen Without A Gesture
 
-This proposal is an early design sketch by Chrome's Web Apps & Capabilities (Fugu) team to describe the problem below and solicit
-feedback on the proposed solution. It has not been approved to ship in Chrome.
+This proposal reflects Chrome's implementation of the Automatic Full Screen content setting:
+  - https://chromestatus.com/feature/6218822004768768
+  - https://chromeenterprise.google/policies/#AutomaticFullscreenAllowedForUrls
+  - chrome://settings/content/automaticFullScreen
+
+This explainer was drafted as an early design sketch by Chrome's Web Apps & Capabilities (Fugu) team to describe the problem below and solicit feedback on the proposed solution.
+See the relevant [issue](https://github.com/whatwg/fullscreen/issues/234) and [pull request](https://github.com/whatwg/fullscreen/pull/235) for [Element.requestFullscreen()](https://fullscreen.spec.whatwg.org/#dom-element-requestfullscreen).
 
 ## Proponents
 
